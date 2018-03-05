@@ -3,6 +3,7 @@
 """
 Based on the tflearn example located here:
 https://github.com/tflearn/tflearn/blob/master/examples/images/convnet_cifar10.py
+https://medium.com/@ageitgey/machine-learning-is-fun-part-3-deep-learning-and-convolutional-neural-networks-f40359318721
 """
 from __future__ import division, print_function, absolute_import
 
@@ -28,7 +29,18 @@ from sklearn.model_selection import train_test_split
 data = np.load('small_dataset.npy')
 labels=np.load('labels.npy')
 
-data_train, data_test, labels_train, labels_test = train_test_split(data, labels, test_size=0.20, random_state=42)
+###here we need to add a second column to the labels dataframe which is the opposite of the first column. So if a row in column A is 1, it is 0 in column B
+labels = labels.astype(np.int32, copy=False)
+second_column = np.copy(labels)
+
+second_column += -1
+second_column *= -1
+
+labels_combined=np.column_stack((labels,second_column))
+
+
+
+data_train, data_test, labels_train, labels_test = train_test_split(data, labels_combined, test_size=0.20, random_state=42)
 
 # Shuffle the data
 data_train, labels_train = shuffle(data_train, labels_train)
