@@ -38,7 +38,7 @@ second_column *= -1
 
 labels_combined=np.column_stack((labels,second_column))
 
-
+data = data.astype(np.float64, copy=False)
 
 data_train, data_test, labels_train, labels_test = train_test_split(data, labels_combined, test_size=0.20, random_state=42)
 
