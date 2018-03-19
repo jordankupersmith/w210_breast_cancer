@@ -26,32 +26,70 @@ from sklearn.model_selection import train_test_split
 #os.chdir('/home/ubuntu/modeling')
 
 
-data = np.load('small_dataset.npy')
-labels=np.load('labels.npy')
-
+data = np.load('final-dataset.npy')
+labels=np.load('final-labels.npy')
+#labels=np.load('labels.npy').astype(np.int)
 ###here we need to add a second column to the labels dataframe which is the opposite of the first column. So if a row in column A is 1, it is 0 in column B
-labels = labels.astype(np.int32, copy=False)
+labels = labels.astype(np.float32, copy=False)
 second_column = np.copy(labels)
 
 second_column += -1
 second_column *= -1
 
 labels_combined=np.column_stack((labels,second_column))
+del labels
+del second_column
+data = data.astype(np.float32, copy=False)
 
-data = data.astype(np.float64, copy=False)
-
-data_train, data_test, labels_train, labels_test = train_test_split(data, labels_combined, test_size=0.20, random_state=42)
-
+X_train, X_test, Y_train, Y_test = train_test_split(data, labels_combined, test_size=0.20, random_state=42)
+del data
 # Shuffle the data
-data_train, labels_train = shuffle(data_train, labels_train)
+X_train, y_train = shuffle(X_train, Y_train)
 
-data_test.shape
+#X_test.shape
 
-data_train=data_train.reshape(8000, 128, 128, 1)
-data_test=data_test.reshape(2000, 128, 128, 1)
-#data_train.shape
+#X_train=X_train.reshape(8000, 128, 128, 1)
+#X_test=X_test.reshape(2000, 128, 128, 1)
 
 
+X_train=X_train.reshape(224180, 128, 128, 1)
+X_test=X_test.reshape(56046, 128, 128, 1)
+X_train.shape
+
+print ("X_train", X_train.dtype)
+print ("X_test", X_test.dtype)
+
+print ("Y_train", Y_train.dtype)
+print ("Y_test", Y_test.dtype)
+
+
+
+
+#blabels = labels.astype(bool)
+#pos_data = data[[blabels]]
+#pos_labels = labels[[blabels]]
+#neg_data = data[[(blabels*-1+1).astype(bool)]][:pos_data.shape[0]]
+#neg_labels = np.zeros((neg_data.shape[0],))
+
+#data = np.stack([pos_data,neg_data]).reshape(-1,128,128)
+#labels = np.stack([pos_labels,neg_labels]).reshape(-1)
+
+
+#labels = to_categorical(labels)
+
+#X_train, X_test, y_train, y_test = train_test_split(
+    #data, labels, test_size=0.20, random_state=42)
+    
+    
+    
+#X_train = X_train.astype('float32')
+#X_test = X_test.astype('float32')
+#X_train /= 255.0
+#X_test /= 255.0
+
+
+#X_train = X_train.reshape(-1, 128, 128, 1)
+#X_test = X_test.reshape(-1, 128, 128, 1)
 
 
 
@@ -96,7 +134,7 @@ network = fully_connected(network, 512, activation='relu')
 # Step 7: Dropout - throw away some data randomly during training to prevent over-fitting
 network = dropout(network, 0.5)
 
-# Step 8: Fully-connected neural network with two outputs (0=isn't a bird, 1=is a bird) to make the final prediction
+# Step 8: Fully-connected neural network with two outputs (0=isn't a tumor, 1=is a tumor) to make the final prediction
 network = fully_connected(network, 2, activation='softmax')
 
 # Tell tflearn how we want to train the network
@@ -111,7 +149,7 @@ network = regression(network, optimizer='adam',
 model = tflearn.DNN(network, tensorboard_verbose=0, checkpoint_path='test_classifier.tfl.ckpt')
 
 # Train it! We'll do 100 training passes and monitor it as it goes.
-model.fit(data_train, labels_train, n_epoch=100, shuffle=True, validation_set=(data_test, labels_test),
+model.fit(X_train, Y_train, n_epoch=5, shuffle=True, validation_set=(X_test, Y_test),
           show_metric=True, batch_size=96,
           snapshot_epoch=True,
           run_id='test_classifier')
